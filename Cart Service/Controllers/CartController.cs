@@ -1,9 +1,9 @@
-using Cart_Service.Models;
-using Cart_Service.Models.Orders;
-using Cart_Service.Services;
-using Microsoft.AspNetCore.Mvc;
 
-namespace Cart_Service.Controllers;
+//using Cart_Service.Services;
+using Microsoft.AspNetCore.Mvc;
+using SharedDTOs;
+using Cart_Service.Services;
+namespace CartService.Controllers;
 
 /// <summary>
 /// Cart Controller - Handles HTTP requests for order creation

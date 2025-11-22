@@ -10,7 +10,9 @@
         "dependencies": {
           "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": "1.19.5",
           "RabbitMQ.Client": "6.8.1",
-          "Swashbuckle.AspNetCore": "6.4.0"
+          "SharedDTOs": "1.0.0",
+          "Swashbuckle.AspNetCore": "6.4.0",
+          "SharedDTOs.Reference": "1.0.0.0"
         },
         "runtime": {
           "Cart Service.dll": {}
@@ -77,7 +79,15 @@
         }
       },
       "System.Memory/4.5.5": {},
-      "System.Threading.Channels/7.0.0": {}
+      "System.Threading.Channels/7.0.0": {},
+      "SharedDTOs.Reference/1.0.0.0": {
+        "runtime": {
+          "SharedDTOs.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
     }
   },
   "libraries": {
@@ -155,6 +165,11 @@
       "sha512": "sha512-qmeeYNROMsONF6ndEZcIQ+VxR4Q/TX/7uIVLJqtwIWL7dDWeh0l1UIqgo4wYyjG//5lUNhwkLDSFl+pAWO6oiA==",
       "path": "system.threading.channels/7.0.0",
       "hashPath": "system.threading.channels.7.0.0.nupkg.sha512"
+    },
+    "SharedDTOs.Reference/1.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
     }
   }
 }

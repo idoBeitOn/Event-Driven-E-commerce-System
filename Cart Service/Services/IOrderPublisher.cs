@@ -1,5 +1,5 @@
-using Cart_Service.Models.Orders;
 
+using SharedDTOs;
 namespace Cart_Service.Services;
 
 /// <summary>

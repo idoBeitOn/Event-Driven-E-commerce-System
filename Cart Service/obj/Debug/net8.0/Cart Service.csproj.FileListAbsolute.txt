@@ -32,3 +32,5 @@ C:\Users\User\Desktop\Event-Driven-E-commerce-System\Cart Service\obj\Debug\net8
 C:\Users\User\Desktop\Event-Driven-E-commerce-System\Cart Service\obj\Debug\net8.0\Cart Service.genruntimeconfig.cache
 C:\Users\User\Desktop\Event-Driven-E-commerce-System\Cart Service\obj\Debug\net8.0\ref\Cart Service.dll
 C:\Users\User\Desktop\Event-Driven-E-commerce-System\Cart Service\bin\Debug\net8.0\RabbitMQ.Client.dll
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\Cart Service\bin\Debug\net8.0\SharedDTOs.dll
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\Cart Service\bin\Debug\net8.0\SharedDTOs.pdb

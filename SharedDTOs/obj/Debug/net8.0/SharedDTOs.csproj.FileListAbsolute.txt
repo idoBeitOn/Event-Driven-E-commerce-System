@@ -1,0 +1,12 @@
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\SharedDTOs\bin\Debug\net8.0\SharedDTOs.deps.json
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\SharedDTOs\bin\Debug\net8.0\SharedDTOs.dll
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\SharedDTOs\bin\Debug\net8.0\SharedDTOs.pdb
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\SharedDTOs\obj\Debug\net8.0\SharedDTOs.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\SharedDTOs\obj\Debug\net8.0\SharedDTOs.AssemblyInfoInputs.cache
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\SharedDTOs\obj\Debug\net8.0\SharedDTOs.AssemblyInfo.cs
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\SharedDTOs\obj\Debug\net8.0\SharedDTOs.csproj.CoreCompileInputs.cache
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\SharedDTOs\obj\Debug\net8.0\SharedDTOs.sourcelink.json
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\SharedDTOs\obj\Debug\net8.0\SharedDTOs.dll
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\SharedDTOs\obj\Debug\net8.0\refint\SharedDTOs.dll
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\SharedDTOs\obj\Debug\net8.0\SharedDTOs.pdb
+C:\Users\User\Desktop\Event-Driven-E-commerce-System\SharedDTOs\obj\Debug\net8.0\ref\SharedDTOs.dll

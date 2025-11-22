@@ -137,6 +137,16 @@
         "build": {
           "buildTransitive/net6.0/_._": {}
         }
+      },
+      "SharedDTOs/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "compile": {
+          "bin/placeholder/SharedDTOs.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/SharedDTOs.dll": {}
+        }
       }
     }
   },
@@ -619,12 +629,18 @@
         "system.threading.channels.nuspec",
         "useSharedDesignerContext.txt"
       ]
+    },
+    "SharedDTOs/1.0.0": {
+      "type": "project",
+      "path": "../SharedDTOs/SharedDTOs.csproj",
+      "msbuildProject": "../SharedDTOs/SharedDTOs.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net8.0": [
       "Microsoft.VisualStudio.Azure.Containers.Tools.Targets >= 1.19.5",
       "RabbitMQ.Client >= 6.8.1",
+      "SharedDTOs >= 1.0.0",
       "Swashbuckle.AspNetCore >= 6.4.0"
     ]
   },
@@ -660,7 +676,11 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\User\\Desktop\\Event-Driven-E-commerce-System\\SharedDTOs\\SharedDTOs.csproj": {
+              "projectPath": "C:\\Users\\User\\Desktop\\Event-Driven-E-commerce-System\\SharedDTOs\\SharedDTOs.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

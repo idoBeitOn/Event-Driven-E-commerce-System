@@ -1,5 +1,5 @@
 using Cart_Service.Services;
-
+using SharedDTOs;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

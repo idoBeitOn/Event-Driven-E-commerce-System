@@ -1,10 +1,9 @@
 using System.Text;
 using System.Text.Json;
-using Cart_Service.Models.Orders;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
-
+using SharedDTOs;
 namespace Cart_Service.Services;
 
 /// <summary>
