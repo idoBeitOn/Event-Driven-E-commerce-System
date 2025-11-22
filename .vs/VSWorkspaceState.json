@@ -2,8 +2,7 @@
   "ExpandedNodes": [
     "",
     "\\Cart Service",
-    "\\Cart Service\\Models",
-    "\\Cart Service\\Models\\Orders"
+    "\\Cart Service\\Services"
   ],
   "SelectedNode": "\\Cart Service\\Program.cs",
   "PreviewInSolutionExplorer": false

@@ -13,11 +13,14 @@ namespace Cart_Service.Services;
 /// </summary>
 public class OrderPublisher : IOrderPublisher, IDisposable
 {
-    private readonly IConnection _connection;
-    private readonly IModel _channel;
+    private IConnection? _connection;
+    private IModel? _channel;
     private readonly ILogger<OrderPublisher> _logger;
+    private readonly ConnectionFactory _factory;
     private readonly string _exchangeName;
+    private readonly string _exchangeType;
     private readonly string _routingKey;
+    private readonly object _lock = new object();
     private bool _disposed = false;
 
     public OrderPublisher(IConfiguration configuration, ILogger<OrderPublisher> logger)
@@ -30,11 +33,11 @@ public class OrderPublisher : IOrderPublisher, IDisposable
         var userName = configuration["RabbitMQ:UserName"] ?? "guest";
         var password = configuration["RabbitMQ:Password"] ?? "guest";
         _exchangeName = configuration["RabbitMQ:ExchangeName"] ?? "order-exchange";
-        var exchangeType = configuration["RabbitMQ:ExchangeType"] ?? "fanout";
+        _exchangeType = configuration["RabbitMQ:ExchangeType"] ?? "fanout";
         _routingKey = configuration["RabbitMQ:RoutingKey"] ?? "order.new";
 
-        // Create connection factory
-        var factory = new ConnectionFactory
+        // Create connection factory (lazy connection - won't connect until needed)
+        _factory = new ConnectionFactory
         {
             HostName = hostName,
             Port = port,
@@ -42,30 +45,65 @@ public class OrderPublisher : IOrderPublisher, IDisposable
             Password = password
         };
 
-        // Create connection and channel
-        _connection = factory.CreateConnection();
-        _channel = _connection.CreateModel();
-
-        // Declare exchange (creates it if it doesn't exist)
-        // Durable = true means exchange survives server restart
-        _channel.ExchangeDeclare(
-            exchange: _exchangeName,
-            type: exchangeType,
-            durable: true,
-            autoDelete: false
-        );
-
         _logger.LogInformation(
-            "RabbitMQ connection established. Exchange: {ExchangeName}, Type: {ExchangeType}",
-            _exchangeName,
-            exchangeType
+            "OrderPublisher initialized. Will connect to RabbitMQ on first publish. Host: {HostName}:{Port}",
+            hostName,
+            port
         );
+    }
+
+    private void EnsureConnected()
+    {
+        if (_connection?.IsOpen == true && _channel?.IsOpen == true)
+            return;
+
+        lock (_lock)
+        {
+            if (_connection?.IsOpen == true && _channel?.IsOpen == true)
+                return;
+
+            try
+            {
+                // Close existing connection if it exists but is not open
+                _channel?.Close();
+                _channel?.Dispose();
+                _connection?.Close();
+                _connection?.Dispose();
+
+                // Create new connection and channel
+                _connection = _factory.CreateConnection();
+                _channel = _connection.CreateModel();
+
+                // Declare exchange (creates it if it doesn't exist)
+                // Durable = true means exchange survives server restart
+                _channel.ExchangeDeclare(
+                    exchange: _exchangeName,
+                    type: _exchangeType,
+                    durable: true,
+                    autoDelete: false
+                );
+
+                _logger.LogInformation(
+                    "RabbitMQ connection established. Exchange: {ExchangeName}, Type: {ExchangeType}",
+                    _exchangeName,
+                    _exchangeType
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to establish RabbitMQ connection");
+                throw;
+            }
+        }
     }
 
     public Task PublishOrderAsync(OrderDTO order, CancellationToken cancellationToken = default)
     {
         try
         {
+            // Ensure connection is established (lazy connection)
+            EnsureConnected();
+
             // Serialize OrderDTO to JSON
             var json = JsonSerializer.Serialize(order, new JsonSerializerOptions
             {
@@ -76,7 +114,7 @@ public class OrderPublisher : IOrderPublisher, IDisposable
             var body = Encoding.UTF8.GetBytes(json);
 
             // Create message properties
-            var properties = _channel.CreateBasicProperties();
+            var properties = _channel!.CreateBasicProperties();
             properties.Persistent = true; // Message survives server restart
             properties.ContentType = "application/json";
             properties.MessageId = order.OrderId;
