@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Register OrderFactory for Dependency Injection
 builder.Services.AddScoped<IOrderFactory, OrderFactory>();
+// Register OrderPublisher as Singleton to reuse RabbitMQ connection
+builder.Services.AddSingleton<IOrderPublisher, OrderPublisher>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

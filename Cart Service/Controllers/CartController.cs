@@ -14,14 +14,19 @@ namespace Cart_Service.Controllers;
 public class CartController : ControllerBase
 {
     private readonly IOrderFactory _orderFactory;
+    private readonly IOrderPublisher _orderPublisher;
     private readonly ILogger<CartController> _logger;
 
     /// <summary>
-    /// Constructor - Dependency Injection provides IOrderFactory
+    /// Constructor - Dependency Injection provides IOrderFactory and IOrderPublisher
     /// </summary>
-    public CartController(IOrderFactory orderFactory, ILogger<CartController> logger)
+    public CartController(
+        IOrderFactory orderFactory,
+        IOrderPublisher orderPublisher,
+        ILogger<CartController> logger)
     {
         _orderFactory = orderFactory;
+        _orderPublisher = orderPublisher;
         _logger = logger;
     }
 
@@ -33,7 +38,7 @@ public class CartController : ControllerBase
     [ProducesResponseType(typeof(OrderDTO), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public IActionResult CreateOrder([FromBody] OrderRequestDTO request)
+    public async Task<IActionResult> CreateOrder([FromBody] OrderRequestDTO request)
     {
         try
         {
@@ -54,8 +59,19 @@ public class CartController : ControllerBase
 
             _logger.LogInformation("Order created successfully: {OrderId}", order.OrderId);
 
-            // Note: In next step, we'll publish this to RabbitMQ
-            // For now, we just return the created order
+            // Publish order event to RabbitMQ
+            try
+            {
+                await _orderPublisher.PublishOrderAsync(order);
+                _logger.LogInformation("Order published to RabbitMQ: {OrderId}", order.OrderId);
+            }
+            catch (Exception publishEx)
+            {
+                // Log error but don't fail the request - order was created successfully
+                // In production, you might want to implement retry logic or outbox pattern
+                _logger.LogError(publishEx, "Failed to publish order to RabbitMQ: {OrderId}", order.OrderId);
+            }
+
             return Ok(order);
         }
         catch (Exception ex)

@@ -1,6 +1,6 @@
 namespace Cart_Service.Models.Orders;
 
-public sealed class ShippingDto
+public sealed class ShippingDTO
 {
     public string Method { get; init; } = string.Empty;
     public string Address { get; init; } = string.Empty;

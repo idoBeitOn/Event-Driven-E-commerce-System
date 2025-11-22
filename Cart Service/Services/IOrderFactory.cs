@@ -10,7 +10,7 @@ namespace Cart_Service.Services;
 public interface IOrderFactory
 {
     /// <summary>
-    /// Creates a complete OrderDTO from a CreateOrderRequestDTO
+    /// Creates a complete OrderDTO from a OrderRequestDTO
     /// Generates all random data internally
     /// </summary>
     OrderDTO CreateOrder(OrderRequestDTO request);

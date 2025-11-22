@@ -1,6 +1,6 @@
 namespace Cart_Service.Models.Orders;
 
-public sealed class TotalsDto
+public sealed class TotalsDTO
 {
     public decimal SubTotal { get; init; }
     public decimal Tax { get; init; }
