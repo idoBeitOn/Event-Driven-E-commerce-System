@@ -2,7 +2,7 @@
 
 //DTO - Data Transfer Object - used to transfer data between different layers of the application
 //Model for the request body of the CreateOrder endpoint
-public sealed class CreateOrderRequestDTO // Sealed class to prevent inheritance and ensure immutability
+public sealed class OrderRequestDTO // Sealed class to prevent inheritance and ensure immutability
 {
     public string OrderId { get; set; } = string.Empty;
     public int ItemsNum { get; set; }

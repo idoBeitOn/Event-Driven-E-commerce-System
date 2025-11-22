@@ -13,6 +13,5 @@ public interface IOrderFactory
     /// Creates a complete OrderDTO from a CreateOrderRequestDTO
     /// Generates all random data internally
     /// </summary>
-    OrderDTO CreateOrder(CreateOrderRequestDTO request);
+    OrderDTO CreateOrder(OrderRequestDTO request);
 }
-

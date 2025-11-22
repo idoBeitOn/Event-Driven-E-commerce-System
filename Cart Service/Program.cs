@@ -1,13 +1,10 @@
-
-
-
-
-
+using Cart_Service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+// Register OrderFactory for Dependency Injection
+builder.Services.AddScoped<IOrderFactory, OrderFactory>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

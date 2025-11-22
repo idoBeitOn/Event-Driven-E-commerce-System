@@ -22,7 +22,7 @@ public class OrderFactory : IOrderFactory
     private readonly string[] _paymentMethods = { "credit_card", "debit_card", "paypal", "apple_pay", "google_pay" };
     private readonly string[] _shippingMethods = { "standard", "express", "overnight", "priority" };
 
-    public OrderDTO CreateOrder(CreateOrderRequestDTO request)
+    public OrderDTO CreateOrder(OrderRequestDTO request)
     {
         // Generate customer data
         var customer = GenerateCustomer();
@@ -143,7 +143,7 @@ public class OrderFactory : IOrderFactory
             _ => 5 // standard
         };
 
-        return new ShippingDto
+        return new ShippingDTO
         {
             Method = shippingMethod,
             Address = customer.Address,
