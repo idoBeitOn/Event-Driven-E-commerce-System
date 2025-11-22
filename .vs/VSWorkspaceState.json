@@ -1,11 +1,7 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\Cart Service",
-    "\\Cart Service\\Controllers",
-    "\\Cart Service\\Services",
-    "\\SharedDTOs"
+    ""
   ],
-  "SelectedNode": "\\Cart Service\\Controllers\\CartController.cs",
+  "SelectedNode": "\\OrderService.sln",
   "PreviewInSolutionExplorer": false
 }
