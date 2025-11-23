@@ -3,7 +3,7 @@ namespace SharedDTOs;
 public sealed class ShippingDTO
 {
     public string Method { get; init; } = string.Empty;
-    public int ShippingCost { get; set; }
+    public double ShippingCost { get; set; }
     public string Address { get; init; } = string.Empty;
     public string City { get; init; } = string.Empty;
     public string Country { get; init; } = string.Empty;

@@ -3,6 +3,9 @@ using OrderService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Services.AddSingleton<ProcessedOrdersStore>();
+builder.Services.AddSingleton<OrderConsumer>(); // consumer itself
 // Register your OrderConsumer as singleton (we want one instance for the queue)
 builder.Services.AddSingleton<OrderConsumer>(sp =>
 {

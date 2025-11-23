@@ -1,10 +1,10 @@
 namespace SharedDTOs;
 public sealed class TotalsDTO
 {
-    public decimal SubTotal { get; init; }
-    public decimal Tax { get; init; }
-    public decimal Discount { get; init; }
-    public decimal TotalAmount { get; init; }
+    public double SubTotal { get; init; }
+    public double Tax { get; init; }
+    public double Discount { get; init; }
+    public double TotalAmount { get; init; }
     public string Currency { get; init; } = "USD";
 }
 
