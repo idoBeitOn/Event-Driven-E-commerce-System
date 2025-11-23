@@ -5,8 +5,10 @@ namespace OrderService.Logic.Interfaces
 
     //Abstracts the RabbitMQ consuming logic.
     //De-serialize JSON to OrderDTO type variable in order to make calculations.
-    public interface IOrderConsumer
+    public interface IOrderConsumer : IDisposable
     {
-        Task ConsumeOrderAsync(OrderDTO orderDTO, CancellationToken cancellationToken = default);
+        Task StartAsync(CancellationToken cancellationToken = default);
+        Task StopAsync(OrderDTO orderDTO, CancellationToken cancellationToken = default);
+        Task ConsumeOrderAsync(OrderDTO orderDTO, CancellationToken cancelToken = default);
     }
 }

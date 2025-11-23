@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\OrderService\\Controllers",
+    "\\OrderService\\Logic",
+    "\\OrderService\\Logic\\Interfaces"
   ],
-  "SelectedNode": "\\OrderService.sln",
   "PreviewInSolutionExplorer": false
 }
