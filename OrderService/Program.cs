@@ -5,12 +5,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddSingleton<ProcessedOrdersStore>();
-builder.Services.AddSingleton<OrderConsumer>(); // consumer itself
+
+var rabbitConfig = builder.Configuration.GetSection("RabbitMQ");
+var hostName = rabbitConfig["HostName"];
+var queueName = rabbitConfig["QueueName"];
+//builder.Services.AddSingleton<OrderConsumer>(); // consumer itself
 // Register your OrderConsumer as singleton (we want one instance for the queue)
 builder.Services.AddSingleton<OrderConsumer>(sp =>
 {
+    var config = sp.GetRequiredService<IConfiguration>();
     var logger = sp.GetRequiredService<ILogger<OrderConsumer>>();
-    return new OrderConsumer("localhost", "order-queue", logger);
+    var store = sp.GetRequiredService<ProcessedOrdersStore>();
+    return new OrderConsumer(config, logger, store);
 });
 
 // Register the hosted service

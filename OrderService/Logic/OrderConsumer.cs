@@ -1,63 +1,56 @@
-﻿using OrderService.Logic.Interfaces;
+﻿using OrderService.Services;
 using SharedDTOs;
 using RabbitMQConsume;
 using System.Text.Json;
-using OrderService.Services;
-
+using System.IO;
 namespace OrderService.Logic
 {
-    public class OrderConsumer : RabbitMQConsumeBase<OrderDTO>, IOrderConsumer
+    public class OrderConsumer : RabbitMQConsumeBase<OrderDTO>
     {
-        private readonly ILogger<OrderConsumer> ?_logger;
-      //  public static readonly List<OrderDTO> _orders = new List<OrderDTO>();
-        private static readonly object _lock = new object();
-        private readonly ProcessedOrdersStore ?_store;
-        public OrderConsumer(string hostName, string queueName, ILogger<OrderConsumer> logger) : base(hostName, queueName)
+        private readonly ILogger<OrderConsumer> _logger;
+        private readonly ProcessedOrdersStore _store;
+
+        public OrderConsumer(IConfiguration configuration, ILogger<OrderConsumer> logger, ProcessedOrdersStore store)
+         : base(configuration["RabbitMQ:HostName"] ?? "localhost",
+               int.Parse(configuration["RabbitMQ:Port"] ?? "5672"),
+               configuration["RabbitMQ:UserName"] ?? "guest",
+               configuration["RabbitMQ:Password"] ?? "guest",
+               configuration["RabbitMQ:QueueName"] ?? "order-queue")
         {
             _logger = logger;
+            _store = store;
         }
 
         public override async Task HandleMessageAsync(OrderDTO orderDTO)
         {
             try
             {
-                // Example: log the order
-                _logger?.LogInformation($"Received Order: {orderDTO.OrderId}, Total: {orderDTO.Totals}");
+                _logger.LogInformation($"Received Order: {orderDTO.OrderId}, Total: {orderDTO.Totals.TotalAmount}");
+
+                // Process order (calculations, file saving, store in memory)
                 await ProcessOrderAsync(orderDTO);
-                _store?.AddOrder(orderDTO);
-                // TODO: implement your order processing logic here
-                await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error processing order");
-                throw; // will trigger BasicNack in base class
+                _logger.LogError(ex, "Error processing order");
+                throw; // triggers BasicNack in the base class
             }
         }
 
-        public async Task ProcessOrderAsync(OrderDTO orderDTO)
+        private async Task ProcessOrderAsync(OrderDTO orderDTO)
         {
-
-            // 1. Calculate shipping cost
+            // 1. Calculate shipping cost (10% of total)
             orderDTO.Shipping.ShippingCost = orderDTO.Totals.TotalAmount * 0.10;
 
-            // 3. Save to JSON file
+            // 2. Save order to a JSON file
             string fileName = $"order_{orderDTO.OrderId}.json";
             string json = JsonSerializer.Serialize(orderDTO, new JsonSerializerOptions { WriteIndented = true });
-
             await File.WriteAllTextAsync(fileName, json);
+
+            // 3. Add to in-memory store
             _store.AddOrder(orderDTO);
+
             _logger.LogInformation($"Order {orderDTO.OrderId} processed: Shipping={orderDTO.Shipping.ShippingCost}, saved to {fileName}");
-
         }
-
-
-
-
-
-
-
-
-
     }
 }

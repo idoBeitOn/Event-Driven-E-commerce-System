@@ -13,14 +13,19 @@ namespace RabbitMQConsume
         private readonly IModel _channel;
         private bool _disposed = false;
 
-        protected RabbitMQConsumeBase(string hostName, string queueName)
+        protected RabbitMQConsumeBase(string hostName, int port, string userName, string password, string queueName)
         {
             _queueName = queueName;
 
             var factory = new ConnectionFactory
             {
                 HostName = hostName,
-                DispatchConsumersAsync = true
+                Port = port,
+                UserName = userName,
+                Password = password,
+                DispatchConsumersAsync = true,
+                AutomaticRecoveryEnabled = true,
+                NetworkRecoveryInterval = TimeSpan.FromSeconds(5)
             };
 
             _connection = factory.CreateConnection();
@@ -55,9 +60,10 @@ namespace RabbitMQConsume
                     await HandleMessageAsync(messageObj);
                     _channel.BasicAck(ea.DeliveryTag, false);
                 }
-                catch
+                catch (Exception ex)
                 {
                     // Failed messages go back to queue
+                    Console.WriteLine($"Error in consumer: {ex.Message}");
                     _channel.BasicNack(ea.DeliveryTag, false, true);
                 }
             };

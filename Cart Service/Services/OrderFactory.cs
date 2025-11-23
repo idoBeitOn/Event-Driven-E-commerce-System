@@ -113,10 +113,10 @@ public class OrderFactory : IOrderFactory
 
         return new TotalsDTO
         {
-            SubTotal = subTotal,
-            Tax = tax,
-            Discount = discount,
-            TotalAmount = totalAmount,
+            SubTotal = (double)subTotal,
+            Tax = (double)tax,
+            Discount = (double)discount,
+            TotalAmount = (double)totalAmount,
             Currency = "USD"
         };
     }
