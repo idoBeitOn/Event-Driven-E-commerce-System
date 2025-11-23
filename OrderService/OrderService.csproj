@@ -17,6 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="RabbitMQConsume">
+      <HintPath>..\RabbitMQConsume\bin\Debug\net8.0\RabbitMQConsume.dll</HintPath>
+    </Reference>
     <Reference Include="SharedDTOs">
       <HintPath>..\SharedDTOs\bin\Debug\net8.0\SharedDTOs.dll</HintPath>
     </Reference>
