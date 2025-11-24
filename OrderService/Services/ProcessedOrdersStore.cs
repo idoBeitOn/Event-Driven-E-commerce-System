@@ -19,10 +19,10 @@ namespace OrderService.Services
 				return _orders.ToList(); // return a copy
 		}
 
-		public OrderDTO? GetOrderById(Guid id)
+		public OrderDTO? GetOrderById(string id)
 		{
 			lock (_lock)
-				return _orders.FirstOrDefault(o => Guid.Parse(o.OrderId) == id);
+				return _orders.FirstOrDefault(o => (o.OrderId) == id);
 		}
 	}
 }

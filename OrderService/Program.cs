@@ -6,6 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<ProcessedOrdersStore>();
 
+
+/*
 var rabbitConfig = builder.Configuration.GetSection("RabbitMQ");
 var hostName = rabbitConfig["HostName"];
 var queueName = rabbitConfig["QueueName"];
@@ -18,8 +20,35 @@ builder.Services.AddSingleton<OrderConsumer>(sp =>
     var store = sp.GetRequiredService<ProcessedOrdersStore>();
     return new OrderConsumer(config, logger, store);
 });
-
+*/
 // Register the hosted service
+
+
+
+builder.Services.AddSingleton<OrderConsumer>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var store = sp.GetRequiredService<ProcessedOrdersStore>();
+    var logger = sp.GetRequiredService<ILogger<OrderConsumer>>();
+
+    var rabbitConfig = config.GetSection("RabbitMQ");
+
+    string hostName = rabbitConfig["HostName"] ?? "rabbitmq"; // must match docker service name
+    int port = int.Parse(rabbitConfig["Port"] ?? "5672");
+    string user = rabbitConfig["UserName"] ?? "guest";
+    string pass = rabbitConfig["Password"] ?? "guest";
+    string queue = rabbitConfig["QueueName"] ?? "order-queue";
+    string exchange = rabbitConfig["ExchangeName"] ?? "order-exchange";
+    return new OrderConsumer(hostName, port, user, pass, queue ,exchange, store, logger);
+});
+
+
+
+
+
+
+
+
 builder.Services.AddHostedService<OrderConsumerHostedService>();
 
 builder.Services.AddControllers();

@@ -13,7 +13,7 @@ namespace RabbitMQConsume
         private readonly IModel _channel;
         private bool _disposed = false;
 
-        protected RabbitMQConsumeBase(string hostName, int port, string userName, string password, string queueName)
+        protected RabbitMQConsumeBase(string hostName, int port, string userName, string password, string queueName,string exchangeName = null, string exchangeType = "fanout")
         {
             _queueName = queueName;
 
@@ -31,14 +31,19 @@ namespace RabbitMQConsume
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            // Ensure queue exists
-            _channel.QueueDeclare(
-                queue: _queueName,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null
-            );
+
+            if (!string.IsNullOrEmpty(exchangeName))
+            {
+                _channel.ExchangeDeclare(exchangeName, exchangeType, durable: true, autoDelete: false);
+                _channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false);
+                _channel.QueueBind(queueName, exchangeName, ""); // fanout ignores routing key
+            }
+            else
+            {
+                // just declare the queue
+                _channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false);
+            }
+    
         }
 
         public void StartConsuming(CancellationToken cancellationToken = default)
@@ -49,8 +54,14 @@ namespace RabbitMQConsume
             {
                 try
                 {
+                    
                     string json = Encoding.UTF8.GetString(ea.Body.ToArray());
-                    var messageObj = JsonSerializer.Deserialize<T>(json);
+                    Console.WriteLine("RAW JSON:");
+                    Console.WriteLine(json);
+                    var messageObj = JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
 
                     if (messageObj == null)
                     {
@@ -73,6 +84,8 @@ namespace RabbitMQConsume
                 autoAck: false,
                 consumer: consumer
             );
+
+            Console.WriteLine("OrderConsumer connected to RabbitMQ"); // <-- your log line;
 
             // Optional: let caller decide when to stop
             Task.Run(() =>

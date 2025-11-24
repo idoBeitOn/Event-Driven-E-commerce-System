@@ -14,8 +14,8 @@ namespace OrderService.Controllers
             _store = store;
         }
 
-        [HttpGet("{id:guid}")]
-        public IActionResult GetOrderSummary(Guid id)
+        [HttpGet("{id}")]
+        public IActionResult GetOrderSummary(string id)
         {
             var order = _store.GetOrderById(id);
             if (order == null)

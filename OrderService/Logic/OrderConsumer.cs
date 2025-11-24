@@ -10,16 +10,44 @@ namespace OrderService.Logic
         private readonly ILogger<OrderConsumer> _logger;
         private readonly ProcessedOrdersStore _store;
 
-        public OrderConsumer(IConfiguration configuration, ILogger<OrderConsumer> logger, ProcessedOrdersStore store)
-         : base(configuration["RabbitMQ:HostName"] ?? "localhost",
-               int.Parse(configuration["RabbitMQ:Port"] ?? "5672"),
-               configuration["RabbitMQ:UserName"] ?? "guest",
-               configuration["RabbitMQ:Password"] ?? "guest",
-               configuration["RabbitMQ:QueueName"] ?? "order-queue")
+        public OrderConsumer(
+        string hostName,
+        int port,
+        string userName,
+        string password,
+        string queueName,
+        string exchangeName,
+        ProcessedOrdersStore store,
+        ILogger<OrderConsumer> logger
+    )
+    : base(hostName, port, userName, password, queueName, exchangeName, "fanout")
         {
-            _logger = logger;
             _store = store;
+            _logger = logger;
         }
+
+
+
+
+
+
+
+
+
+
+        /*
+                public OrderConsumer(IConfiguration configuration, ILogger<OrderConsumer> logger, ProcessedOrdersStore store)
+                 : base(configuration["RabbitMQ:HostName"] ?? "rabbitmq",
+                       int.Parse(configuration["RabbitMQ:Port"] ?? "5672"),
+                       configuration["RabbitMQ:UserName"] ?? "guest",
+                       configuration["RabbitMQ:Password"] ?? "guest",
+                       configuration["RabbitMQ:QueueName"] ?? "order-queue")
+                {
+                    _logger = logger;
+                    _store = store;
+                }
+
+                */
 
         public override async Task HandleMessageAsync(OrderDTO orderDTO)
         {
