@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\Cart Service.props" />
-</Project>
