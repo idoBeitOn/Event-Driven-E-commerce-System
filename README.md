@@ -1,172 +1,90 @@
 # Event-Driven E-Commerce System
 
-A simple but fully functional event-driven microservices architecture built with C# .NET, RabbitMQ, and Docker Compose.
-The project demonstrates asynchronous communication between services, message publishing/consuming, and clean service separation.
+A simple but fully functional **event-driven microservices architecture** built with **C# .NET**, **RabbitMQ**, and **Docker Compose**.  
+This project demonstrates asynchronous communication between services, message publishing/consuming, and clean service separation.
+
+---
+
+## How It Works
+
+1. **Cart-Service** creates a random, fully populated `OrderDTO` and publishes it.  
+2. **RabbitMQ** routes the message to a queue.  
+3. **Order-Service** consumes messages, processes orders, calculates shipping, and saves them as files.
+
+---
+
+## Tech Stack
+
+- **.NET 8**  
+- **C#**  
+- **RabbitMQ** (fanout exchange)  
+- **Docker & Docker Compose**  
+- **ASP.NET Web API**  
+- **Factory Pattern** (Order generation)  
+- **Background Consumer Service**
 
 
-#### Cart-Service creates a random, fully populated OrderDTO and publishes it.
-
-#### RabbitMQ routes the message to a queue.
-
-#### Order-Service consumes messages, processes orders, calculates shipping, and saves them as files.
-
-
-##  Tech Stack
-
-* .NET 8
-
-* C#
-
-* RabbitMQ (fanout exchange)
-
-* Docker & Docker Compose
-
-* ASP.NET Web API
-
-* Factory Pattern (Order generation)
-
-* Background Consumer Service
-
-
-## Repository Structure
-Cart-Service
-
-Order-Service
-
-SharedDTOs
-
-RabbitMQConsumeBase
-
-docker-compose.yml
-
-
-
+---
 
 ## How to Run
-### Requirements:
 
-* Docker
+### Requirements
 
-* Docker Compose
+- Docker  
+- Docker Compose  
 
- Start the whole system
+### Start the system
+
+
 docker-compose up --build
 
+### Services Started
 
-#### This will start:
+When you run `docker-compose up --build`, the following services will start:
 
-cart-service (port 8080)
+- **cart-service** (port 8080)  
+- **order-service** (port 8081)  
+- **rabbitmq** (management UI on port 15672)
 
-order-service (port 8081)
+### RabbitMQ Management UI
 
-rabbitmq (management UI on port 15672)
+You can access the RabbitMQ management interface at: [http://localhost:15672](http://localhost:15672)  
 
- RabbitMQ Management UI
+**Credentials:**
 
-#### Go to:
+- **User:** `guest`  
+- **Password:** `guest`  
 
-http://localhost:15672
+In the management UI, you will see:
 
-
-User: guest
-Pass: guest
-
-You will see:
-
-Exchange: order-exchange
-
-Queue: order-queue
-
-Messages flowing through the system
+- **Exchange:** `order-exchange`  
+- **Queue:** `order-queue`  
+- **Messages** flowing through the system
 
 
+
+---
 
 ### Creating an Order (API Request)
 
-Send a POST request to the Cart-Service:
+Send a POST request to the **Cart-Service**:
 
+```bash
 POST http://localhost:8080/api/cart/create-order
-
 Content-Type: application/json
 
-
-
-Example body:
-
 {
-  
   "orderId": "ORD-123",
-  
   "itemsNum": 3
-
 }
 
+```
 
+### Retrieving Order Data from Consumer Service (API Request)
 
+Send a GET request to the **Order-Service**:
 
-
-### Retrieving order date from consumer service (API Request)
-
-Send a GET request to the Order-Service:
-
+```bash
 GET http://localhost:8081/api/orders/ORD-029
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
