@@ -1,12 +1,16 @@
-
+﻿
 using SharedDTOs;
 namespace Cart_Service.Services;
 
-/// <summary>
-/// Factory Pattern Implementation
-/// Encapsulates the complex logic of creating a complete OrderDTO
-/// Separates order creation logic from the controller
-/// </summary>
+/*
+This class is an implementation of the Factory Design Pattern.
+Its purpose is:
+✔ To generate a fully-populated OrderDTO
+✔ To encapsulate all the random data logic
+✔ To keep your controller clean and readable
+✔ To centralize order-creation logic in one place
+*/
+
 public class OrderFactory : IOrderFactory
 {
     private readonly Random _random = new();
@@ -67,6 +71,9 @@ public class OrderFactory : IOrderFactory
 
         return new CustomerDTO
         {
+            //string interpolation — inserting variables inside a string.
+            //More readable
+            //No messy string concatenation
             CustomerId = $"CUST-{_random.Next(10000, 99999)}",
             Name = $"{firstName} {lastName}",
             Email = $"{firstName.ToLower()}.{lastName.ToLower()}@example.com",
@@ -86,6 +93,7 @@ public class OrderFactory : IOrderFactory
             var productName = _productNames[_random.Next(_productNames.Length)];
             var category = _categories[_random.Next(_categories.Length)];
             var quantity = _random.Next(1, 5); // 1-4 items per line
+            //NextDoubleGenerates random number between 0.0 and 1.0
             var unitPrice = (decimal)(_random.NextDouble() * 500 + 10); // $10-$510
             unitPrice = Math.Round(unitPrice, 2);
 
@@ -105,6 +113,8 @@ public class OrderFactory : IOrderFactory
 
     private TotalsDTO CalculateTotals(List<OrderItemDTO> items)
     {
+        //LINQ = Language Integrated Query — a set of methods for working with collections.
+        //For each item, multiply unit price by quantity.
         var subTotal = items.Sum(item => item.UnitPrice * item.Quantity);
         var taxRate = 0.08m; // 8% tax
         var tax = Math.Round(subTotal * taxRate, 2);
@@ -126,6 +136,14 @@ public class OrderFactory : IOrderFactory
         return new PaymentDTO
         {
             Method = _paymentMethods[_random.Next(_paymentMethods.Length)],
+
+            /*
+             Guid.NewGuid() → creates a 128-bit unique ID
+            .ToString("N") → converts it to a simple string without dashes
+            .Substring(0, 12) → take first 12 chars
+            .ToUpper() → capitalize "TXN-{...}" → prefix with TXN-
+             Example output: TXN-A3F9B42C197D
+            */
             TransactionId = $"TXN-{Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper()}",
             Paid = false // Orders start as unpaid
         };
@@ -134,6 +152,9 @@ public class OrderFactory : IOrderFactory
     private ShippingDTO GenerateShipping(CustomerDTO customer)
     {
         var shippingMethod = _shippingMethods[_random.Next(_shippingMethods.Length)];
+
+        //Switch expression - More concise,  Returns a value, Easier to read  
+        
         var estimatedDays = shippingMethod switch
         {
             "overnight" => 1,

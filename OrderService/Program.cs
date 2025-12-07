@@ -3,26 +3,13 @@ using OrderService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-builder.Services.AddSingleton<ProcessedOrdersStore>();
-
-
 /*
-var rabbitConfig = builder.Configuration.GetSection("RabbitMQ");
-var hostName = rabbitConfig["HostName"];
-var queueName = rabbitConfig["QueueName"];
-//builder.Services.AddSingleton<OrderConsumer>(); // consumer itself
-// Register your OrderConsumer as singleton (we want one instance for the queue)
-builder.Services.AddSingleton<OrderConsumer>(sp =>
-{
-    var config = sp.GetRequiredService<IConfiguration>();
-    var logger = sp.GetRequiredService<ILogger<OrderConsumer>>();
-    var store = sp.GetRequiredService<ProcessedOrdersStore>();
-    return new OrderConsumer(config, logger, store);
-});
-*/
-// Register the hosted service
+ * Registers ProcessedOrdersStore as a singleton in the dependency injection container.
+ * Only one instance of this store will exist for the lifetime of the app.
+ * This makes sense because you want all consumers and controllers to see the same in-memory orders.
 
+ */
+builder.Services.AddSingleton<ProcessedOrdersStore>();
 
 
 builder.Services.AddSingleton<OrderConsumer>(sp =>
@@ -44,19 +31,11 @@ builder.Services.AddSingleton<OrderConsumer>(sp =>
 
 
 
-
-
-
-
-
 builder.Services.AddHostedService<OrderConsumerHostedService>();
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

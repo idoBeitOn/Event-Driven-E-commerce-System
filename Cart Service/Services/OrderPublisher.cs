@@ -12,15 +12,15 @@ namespace Cart_Service.Services;
 /// </summary>
 public class OrderPublisher : IOrderPublisher, IDisposable
 {
-    private IConnection? _connection;
-    private IModel? _channel;
+    private IConnection? _connection;//TCP connection to RabbitMQ server
+    private IModel? _channel;//an AMQP channel 
     private readonly ILogger<OrderPublisher> _logger;
-    private readonly ConnectionFactory _factory;
+    private readonly ConnectionFactory _factory;//creates connections
     private readonly string _exchangeName;
     private readonly string _exchangeType;
     private readonly string _routingKey;
-    private readonly object _lock = new object();
-    private bool _disposed = false;
+    private readonly object _lock = new object();//ensures thread safety if multiple threads publish simultaneously
+    private bool _disposed = false;//tracks if Dispose() was already called
 
     public OrderPublisher(IConfiguration configuration, ILogger<OrderPublisher> logger)
     {

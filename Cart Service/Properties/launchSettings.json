@@ -1,3 +1,30 @@
+/*
+launchSettings.json controls how the project runs locally — ONLY in development.
+It defines:
+Which port the service runs on
+Whether HTTPS is used
+Whether a browser opens automatically
+Environment variables
+Profiles for running via:
+Visual Studio (IIS Express)
+dotnet run
+Docker
+This file does not affect Docker Compose, and does not affect production.
+
+
+
+
+Your launchSettings.json:
+is for local debugging from Visual Studio
+sets ports for local development
+opens Swagger automatically
+does NOT impact production
+does NOT configure communication between services
+does NOT affect RabbitMQ
+*/
+
+
+
 {
   "profiles": {
     "http": {

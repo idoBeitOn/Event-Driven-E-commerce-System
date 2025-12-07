@@ -2,10 +2,11 @@
 using SharedDTOs;
 namespace Cart_Service.Services;
 
-/// <summary>
-/// Interface for OrderFactory - follows Interface Segregation Principle
-/// This allows for dependency injection and easier testing
-/// </summary>
+/*
+ <summary>
+ Interface for OrderFactory - follows Interface Segregation Principle This allows for dependency injection and easier testing
+ </summary>
+*/
 public interface IOrderFactory
 {
     /// <summary>
