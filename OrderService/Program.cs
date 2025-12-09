@@ -1,7 +1,31 @@
+using Microsoft.EntityFrameworkCore;
+using OrderService.Data;
 using OrderService.Logic;
 using OrderService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+/*
+ * Register Entity Framework Core DbContext
+ * 
+ * AddDbContext registers OrderDbContext with the dependency injection container.
+ * 
+ * Scoped Lifetime:
+ * - A new DbContext instance is created for each HTTP request
+ * - This is important because DbContext is NOT thread-safe
+ * - After the request completes, the DbContext is disposed
+ * 
+ * What happens:
+ * 1. EF Core reads the connection string from appsettings.json (ConnectionStrings:OrdersDb)
+ * 2. Creates a DbContextOptions object with that connection string
+ * 3. Registers OrderDbContext so it can be injected into controllers/services
+ * 
+ * Usage:
+ * - In a controller: public OrdersController(OrderDbContext context) { ... }
+ * - EF Core automatically provides the configured DbContext
+ */
+builder.Services.AddDbContext<OrderDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("OrdersDb")));
 
 /*
  * Registers ProcessedOrdersStore as a singleton in the dependency injection container.
