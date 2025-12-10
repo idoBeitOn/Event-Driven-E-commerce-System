@@ -27,19 +27,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<OrderDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("OrdersDb")));
 
-/*
- * Registers ProcessedOrdersStore as a singleton in the dependency injection container.
- * Only one instance of this store will exist for the lifetime of the app.
- * This makes sense because you want all consumers and controllers to see the same in-memory orders.
-
- */
-builder.Services.AddSingleton<ProcessedOrdersStore>();
-
-
 builder.Services.AddSingleton<OrderConsumer>(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
-    var store = sp.GetRequiredService<ProcessedOrdersStore>();
+    var scopeFactory = sp.GetRequiredService<IServiceScopeFactory>();
     var logger = sp.GetRequiredService<ILogger<OrderConsumer>>();
 
     var rabbitConfig = config.GetSection("RabbitMQ");
@@ -50,7 +41,7 @@ builder.Services.AddSingleton<OrderConsumer>(sp =>
     string pass = rabbitConfig["Password"] ?? "guest";
     string queue = rabbitConfig["QueueName"] ?? "order-queue";
     string exchange = rabbitConfig["ExchangeName"] ?? "order-exchange";
-    return new OrderConsumer(hostName, port, user, pass, queue ,exchange, store, logger);
+    return new OrderConsumer(hostName, port, user, pass, queue ,exchange, scopeFactory, logger);
 });
 
 
