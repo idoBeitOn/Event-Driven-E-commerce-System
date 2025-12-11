@@ -48,7 +48,11 @@ namespace OrderService.Controllers
                 OrderId = order.OrderId,
                 TotalAmount = order.TotalAmount,
                 ShippingCost = order.ShippingCost,
-                CustomerName = order.CustomerName
+                CustomerName = order.CustomerName,
+
+                // Include extra fields for interview/demo clarity
+                OrderDate = order.CreatedAt,
+                NumberOfItems = order.Items?.Count ?? order.ItemsNum
             };
 
             _logger.LogInformation("Returned summary for Order {OrderId}", id);

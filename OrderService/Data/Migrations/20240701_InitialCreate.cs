@@ -1,10 +1,14 @@
 using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Infrastructure; // needed for DbContext attribute
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using OrderService.Data;
 
 namespace OrderService.Data.Migrations;
 
-// Migration class: defines how to create (Up) and remove (Down) the DB schema.
+[DbContext(typeof(OrderDbContext))]
+[Migration("20240701_InitialCreate")]
 public partial class InitialCreate : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
