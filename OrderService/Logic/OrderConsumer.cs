@@ -30,18 +30,22 @@ namespace OrderService.Logic
 
         public override async Task HandleMessageAsync(OrderDTO orderDTO)
         {
-            try
+            using (Serilog.Context.LogContext.PushProperty("OrderID", orderDTO.OrderId)) 
             {
-                _logger.LogInformation($"Received Order: {orderDTO.OrderId}, Total: {orderDTO.Totals.TotalAmount}");
+                try
+                {
+                    _logger.LogInformation("Order message received. Total={TotalAmount}", orderDTO.Totals.TotalAmount);
 
-                // Process the order (calculate shipping, persist to DB)
-                await ProcessOrderAsync(orderDTO);
+                    // Process the order (calculate shipping, persist to DB)
+                    await ProcessOrderAsync(orderDTO);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing order");
+                    throw; // triggers BasicNack in the base class
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing order");
-                throw; // triggers BasicNack in the base class
-            }
+            
         }
 
         private async Task ProcessOrderAsync(OrderDTO orderDTO)
