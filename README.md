@@ -9,14 +9,14 @@ This project demonstrates asynchronous communication, database persistence, resi
 
 ```
 ┌─────────────┐         ┌──────────────┐         ┌─────────────┐         ┌──────────────┐
-│ Cart Service│         │   RabbitMQ    │         │Order Service │         │  PostgreSQL  │
-│  (Port 8080)│────────▶│  (Port 5672)  │────────▶│ (Port 8081) │────────▶│  (Port 5432) │
-│             │ Publish │               │ Consume │             │  Save   │              │
-│  - Creates  │  Order  │  - Exchange:  │  Order  │  - Calculates│ Orders │  - Orders    │
-│    Orders   │  Events │    order-      │  Events │    Shipping  │         │  - OrderItems│
-│  - Publishes│         │    exchange   │         │  - Persists  │         │              │
-│    to Queue │         │  - Queue:     │         │    to DB     │         │              │
-│             │         │    order-queue│         │             │         │              │
+│ Cart Service│         │   RabbitMQ   │         │Order Service │        │  PostgreSQL │
+│  (Port 8080)│────────▶│  (Port 5672) │────────▶│ (Port 8081) │────────▶│  (Port 5432)│
+│             │ Publish │              │ Consume │              │  Save  │              │
+│  - Creates  │  Order  │  - Exchange: │  Order  │  - Calculates│ Orders │  - Orders    │
+│    Orders   │  Events │    order-    │  Events │    Shipping  │        │  - OrderItems│
+│  - Publishes│         │    exchange  │         │  - Persists  │        │              │
+│    to Queue │         │  - Queue:    │         │    to DB     │        │              │
+│             │         │    order-queue│        │              │        │              │
 └─────────────┘         └──────────────┘         └─────────────┘         └──────────────┘
 ```
 
