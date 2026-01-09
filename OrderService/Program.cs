@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .Enrich.FromLogContext()
+    .Enrich.WithProperty("Service", "OrderService")
     .WriteTo.Console()
     .WriteTo.File("logs/orders.log")
     .CreateLogger();
