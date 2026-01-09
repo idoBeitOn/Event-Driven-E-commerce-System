@@ -1,4 +1,4 @@
-﻿using Cart_Service.Services;
+using Cart_Service.Services;
 using SharedDTOs;
 
 /*
@@ -71,6 +71,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+/*
+ * Health Checks - Production-ready monitoring endpoint
+ * 
+ * Simple health check that returns OK if the service is running.
+ * Useful for load balancers and orchestrators to verify service availability.
+ */
+builder.Services.AddHealthChecks();
+
 /*          
 Build() returns a WebApplication instance that represents the fully configured app.  
 app now holds the running web application object.
@@ -89,5 +97,11 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+/*
+ * Health check endpoint
+ * GET /health → Returns 200 OK if service is healthy
+ */
+app.MapHealthChecks("/health");
 
 app.Run();
