@@ -70,6 +70,25 @@ builder.Services.AddHostedService<OrderConsumerHostedService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+/*
+ * Health Checks - Production-ready monitoring endpoint
+ * 
+ * Health checks allow external systems (load balancers, orchestrators, monitoring tools)
+ * to verify if the service is healthy and ready to handle requests.
+ * 
+ * What we're checking:
+ * - Database connectivity (PostgreSQL)
+ * - EF Core can query the database
+ * 
+ * Usage:
+ * - GET /health → Returns 200 OK if healthy, 503 if unhealthy
+ * - GET /health/ready → More detailed readiness check
+ * 
+ * This is a standard pattern in microservices for Kubernetes, Docker Swarm, etc.
+ */
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<OrderDbContext>("postgresql", tags: new[] { "db", "ready" });
 var app = builder.Build();
 
 /*
@@ -126,6 +145,18 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
+/*
+ * Map health check endpoints
+ * 
+ * /health - Basic health check (liveness probe)
+ * /health/ready - Readiness check (includes database connectivity)
+ */
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
 Log.Information("OrderService is starting...");
 
 
