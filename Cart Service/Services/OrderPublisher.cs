@@ -2,6 +2,8 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Retry;
 using RabbitMQ.Client;
 using SharedDTOs;
 namespace Cart_Service.Services;
@@ -21,6 +23,21 @@ public class OrderPublisher : IOrderPublisher, IDisposable
     private readonly string _routingKey;
     private readonly object _lock = new object();//ensures thread safety if multiple threads publish simultaneously
     private bool _disposed = false;//tracks if Dispose() was already called
+    
+    /*
+     * Resilience Policy - Retry with exponential backoff
+     * 
+     * This policy will retry failed RabbitMQ operations up to 3 times.
+     * Wait time between retries increases exponentially: 1s, 2s, 4s
+     * 
+     * Why this is important:
+     * - Network hiccups can cause temporary connection failures
+     * - RabbitMQ might be briefly unavailable during restarts
+     * - Exponential backoff prevents overwhelming a recovering service
+     * 
+     * This demonstrates production-ready error handling patterns.
+     */
+    private readonly AsyncRetryPolicy _retryPolicy;
 
     public OrderPublisher(IConfiguration configuration, ILogger<OrderPublisher> logger)
     {
@@ -49,6 +66,23 @@ public class OrderPublisher : IOrderPublisher, IDisposable
             hostName,
             port
         );
+
+        // Configure retry policy: 3 retries with exponential backoff (1s, 2s, 4s)
+        _retryPolicy = Policy
+            .Handle<Exception>() // Retry on any exception
+            .WaitAndRetryAsync(
+                retryCount: 3,
+                sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt - 1)), // 1s, 2s, 4s
+                onRetry: (exception, timeSpan, retryCount, context) =>
+                {
+                    _logger.LogWarning(
+                        exception,
+                        "RabbitMQ publish failed. Retry {RetryCount}/3 after {Delay}ms",
+                        retryCount,
+                        timeSpan.TotalMilliseconds
+                    );
+                }
+            );
     }
 
     private void EnsureConnected()
@@ -96,53 +130,58 @@ public class OrderPublisher : IOrderPublisher, IDisposable
         }
     }
 
-    public Task PublishOrderAsync(OrderDTO order, CancellationToken cancellationToken = default)
+    public async Task PublishOrderAsync(OrderDTO order, CancellationToken cancellationToken = default)
     {
-        try
+        /*
+         * Execute publish operation with retry policy.
+         * If RabbitMQ is temporarily unavailable, Polly will automatically retry.
+         */
+        await _retryPolicy.ExecuteAsync(async () =>
         {
-            // Ensure connection is established (lazy connection)
-            EnsureConnected();
-
-            // Serialize OrderDTO to JSON
-            var json = JsonSerializer.Serialize(order, new JsonSerializerOptions
+            try
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = false
-            });
+                // Ensure connection is established (lazy connection)
+                EnsureConnected();
 
-            var body = Encoding.UTF8.GetBytes(json);
+                // Serialize OrderDTO to JSON
+                var json = JsonSerializer.Serialize(order, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    WriteIndented = false
+                });
 
-            // Create message properties
-            var properties = _channel!.CreateBasicProperties();
-            properties.Persistent = true; // Message survives server restart
-            properties.ContentType = "application/json";
-            properties.MessageId = order.OrderId;
-            properties.Timestamp = new AmqpTimestamp(
-                DateTimeOffset.UtcNow.ToUnixTimeSeconds()
-            );
+                var body = Encoding.UTF8.GetBytes(json);
 
-            // Publish message to exchange
-            // For fanout exchange, routing key is ignored but we include it anyway
-            _channel.BasicPublish(
-                exchange: _exchangeName,
-                routingKey: _routingKey,
-                basicProperties: properties,
-                body: body
-            );
+                // Create message properties
+                var properties = _channel!.CreateBasicProperties();
+                properties.Persistent = true; // Message survives server restart
+                properties.ContentType = "application/json";
+                properties.MessageId = order.OrderId;
+                properties.Timestamp = new AmqpTimestamp(
+                    DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                );
 
-            _logger.LogInformation(
-                "Order published to RabbitMQ successfully. OrderId: {OrderId}, Exchange: {ExchangeName}",
-                order.OrderId,
-                _exchangeName
-            );
+                // Publish message to exchange
+                // For fanout exchange, routing key is ignored but we include it anyway
+                _channel.BasicPublish(
+                    exchange: _exchangeName,
+                    routingKey: _routingKey,
+                    basicProperties: properties,
+                    body: body
+                );
 
-            return Task.CompletedTask;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error publishing order to RabbitMQ. OrderId: {OrderId}", order.OrderId);
-            throw;
-        }
+                _logger.LogInformation(
+                    "Order published to RabbitMQ successfully. OrderId: {OrderId}, Exchange: {ExchangeName}",
+                    order.OrderId,
+                    _exchangeName
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error publishing order to RabbitMQ. OrderId: {OrderId}", order.OrderId);
+                throw; // Re-throw so Polly can handle retry
+            }
+        });
     }
 
     public void Dispose()

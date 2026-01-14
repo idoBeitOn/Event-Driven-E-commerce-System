@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrderService.Data;
+using OrderService.Data.Entities;
+using Serilog.Filters;
 using SharedDTOs;
 
 namespace OrderService.Controllers
@@ -55,7 +57,7 @@ namespace OrderService.Controllers
                 NumberOfItems = order.Items?.Count ?? order.ItemsNum
             };
 
-            _logger.LogInformation("Returned summary for Order {OrderId}", id);
+            _logger.LogDebug("Fetching order summary for OrderId {Orderid}",id);
             return Ok(summary);
         }
     }

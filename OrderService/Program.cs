@@ -2,8 +2,22 @@ using Microsoft.EntityFrameworkCore;
 using OrderService.Data;
 using OrderService.Logic;
 using OrderService.Services;
+using Serilog;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Service", "OrderService")
+    .WriteTo.Console()
+    .WriteTo.File("logs/orders.log")
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
 
 /*
  * Register Entity Framework Core DbContext
@@ -24,11 +38,11 @@ var builder = WebApplication.CreateBuilder(args);
  * - In a controller: public OrdersController(OrderDbContext context) { ... }
  * - EF Core automatically provides the configured DbContext
  */
+
 builder.Services.AddDbContext<OrderDbContext>(options =>
     /*
      * MigrationsAssembly: explicitly point EF Core to the assembly that contains migrations.
      * Without this, the runtime inside the container might not discover the migration class,
-     * which is why we saw "Discovered migrations: 0".
      */
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("OrdersDb"),
@@ -43,7 +57,7 @@ builder.Services.AddSingleton<OrderConsumer>(sp =>
 
     var rabbitConfig = config.GetSection("RabbitMQ");
 
-    string hostName = rabbitConfig["HostName"] ?? "rabbitmq"; // must match docker service name
+    string hostName = rabbitConfig["HostName"] ?? "rabbitmq"; 
     int port = int.Parse(rabbitConfig["Port"] ?? "5672");
     string user = rabbitConfig["UserName"] ?? "guest";
     string pass = rabbitConfig["Password"] ?? "guest";
@@ -52,12 +66,29 @@ builder.Services.AddSingleton<OrderConsumer>(sp =>
     return new OrderConsumer(hostName, port, user, pass, queue ,exchange, scopeFactory, logger);
 });
 
-
-
 builder.Services.AddHostedService<OrderConsumerHostedService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+/*
+ * Health Checks - Production-ready monitoring endpoint
+ * 
+ * Health checks allow external systems (load balancers, orchestrators, monitoring tools)
+ * to verify if the service is healthy and ready to handle requests.
+ * 
+ * What we're checking:
+ * - Database connectivity (PostgreSQL)
+ * - EF Core can query the database
+ * 
+ * Usage:
+ * - GET /health → Returns 200 OK if healthy, 503 if unhealthy
+ * - GET /health/ready → More detailed readiness check
+ * 
+ * This is a standard pattern in microservices for Kubernetes, Docker Swarm, etc.
+ */
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<OrderDbContext>("postgresql", tags: new[] { "db", "ready" });
 var app = builder.Build();
 
 /*
@@ -85,25 +116,24 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    
     try
     {
         // Log discovered migrations and pending migrations to help debug
         var allMigrations = dbContext.Database.GetMigrations().ToList();
         var pendingMigrations = dbContext.Database.GetPendingMigrations().ToList();
-
         logger.LogInformation("Discovered migrations: {Count} -> {Migrations}", allMigrations.Count, string.Join(", ", allMigrations));
         logger.LogInformation("Pending migrations: {Count} -> {Migrations}", pendingMigrations.Count, string.Join(", ", pendingMigrations));
-
         logger.LogInformation("Applying database migrations...");
         dbContext.Database.Migrate();
         logger.LogInformation("Database migrations applied successfully.");
     }
+
     catch (Exception ex)
     {
         logger.LogError(ex, "An error occurred while applying database migrations.");
         throw; // Fail fast if migrations can't be applied
     }
+
 }
 
 if (app.Environment.IsDevelopment())
@@ -116,4 +146,27 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-app.Run();
+/*
+ * Map health check endpoints
+ * 
+ * /health - Basic health check (liveness probe)
+ * /health/ready - Readiness check (includes database connectivity)
+ */
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
+Log.Information("OrderService is starting...");
+
+
+try
+{
+    app.Run();
+}
+
+finally
+{
+    Log.CloseAndFlush();
+}
+

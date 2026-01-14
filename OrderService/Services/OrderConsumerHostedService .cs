@@ -17,13 +17,15 @@ namespace OrderService.Services
     public class OrderConsumerHostedService : BackgroundService
 	{
 		private readonly OrderConsumer _orderConsumer;
+		private readonly ILogger<OrderConsumerHostedService> _logger;
 
         //This receives the OrderConsumer instance from dependency injection
         //This is the consumer that listens to RabbitMQ.
-        public OrderConsumerHostedService(OrderConsumer orderConsumer)
-		{
-			_orderConsumer = orderConsumer;
-		}
+        public OrderConsumerHostedService(OrderConsumer orderConsumer, ILogger<OrderConsumerHostedService> logger)
+        {
+            _orderConsumer = orderConsumer;
+            _logger = logger;
+        }
 
 
         /*
@@ -33,14 +35,17 @@ namespace OrderService.Services
 		 */
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
 		{
-			// Start consuming messages in the background
-			_orderConsumer.StartConsuming(stoppingToken);
+			_logger.LogInformation("OrderConsumerHostedService starting");
+            stoppingToken.Register(() => _logger.LogInformation("OrderConsumerHostedService stopping (cancellation requested)"));
+            // Start consuming messages in the background
+            _orderConsumer.StartConsuming(stoppingToken);
 			return Task.CompletedTask;
 		}
 
 		public override void Dispose()
 		{
-			_orderConsumer.Dispose();
+            _logger.LogInformation("OrderConsumerHostedService disposing");
+            _orderConsumer.Dispose();
 			base.Dispose();
 		}
 	}

@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  cartservice:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    ports:
+      - "9228:9229"   # Debug port for cartservice
+    volumes:
+      - ./Cart Service:/app
+    command: ["dotnet", "CartService.dll", "--inspect=0.0.0.0:9229"]
+
+  orderservice:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    ports:
+      - "9229:9229"   # Debug port for orderservice
+    volumes:
+      - ./OrderService:/app
+    command: ["dotnet", "OrderService.dll", "--inspect=0.0.0.0:9229"]
